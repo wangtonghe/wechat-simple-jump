@@ -44,18 +44,20 @@ def is_spot(px):
 
 
 def jump(image):
-    width, height = image.size
+    width, height = image.size  # image为图片实例
     num = 0
     sum_x = 0
     sum_y = 0
+    s_height = int(height / 3)  # 查找的起始高度
+    e_height = int(height / 5 * 4)  # 查找的终止高度
 
-    for i in range(0, width, 10):
-        for j in range(0, height, 20):
-            pixel = image.getpixel((i, j))
+    for i in range(0, width, 10):  # 宽度查找，步长为10
+        for j in range(s_height, e_height, 20):  # 高度查找，步长为20
+            pixel = image.getpixel((i, j))  # 获取像素点
             # print(pixel)
             if (0x20 < pixel[0] < 0x40) \
                     and (0x20 < pixel[1] < 0x40) \
-                    and (0x45 < pixel[2] < 0x80):
+                    and (0x45 < pixel[2] < 0x80):  # 比较是否在紫色棋子的颜色范围
                 r, g, b, a = pixel
                 # print('颜色是{}，{}，{}'.format(r, g, b))
                 # print('坐标：{},{}'.format(i, j))
@@ -64,19 +66,25 @@ def jump(image):
                 sum_y = sum_y + j
     if num == 0:  # 出错，停止
         return DEFAULT_ERROR_DISTANCE
-    avg_x = int(sum_x / num)
+    avg_x = int(sum_x / num)   # 找出的点平均后得到中点
     avg_y = int(sum_y / num)
 
-    print('小人坐标为：{},{}'.format(avg_x, avg_y))
+    print('棋子坐标为：{},{}'.format(avg_x, avg_y))
 
     e_h = int(height * 2 / 3)
     s_h = int(height / 4)
 
-    pre_px = None
+    '''
+    以下为寻找方块中点，原理是根据色差。具体：记录上一个像素点，当前像素点与上一个的比较，
+    若相差过大，表明找到了目标方块的第一个像素点（需排除是棋子的可能），记录在select_color里。
+    以后遍历时当前像素点就与select_color比较，相差不大则表明是目标方块的点，记录。收集足够多的点或遍历完成后求中点即可。
+    '''
+
+    pre_px = None  # 前一个像素点
     h_num = 0
     h_sum_x = 0
     h_sum_y = 0
-    select_color = None
+    select_color = None 
     l_num = 0
 
     flag = False
@@ -84,9 +92,8 @@ def jump(image):
     for j in range(s_h, e_h, 30):
         for i in range(0, width, 30):
             px = image.getpixel((i, j))
-            # print('坐标：{},{}'.format(i, j))
             r, g, b, a = px
-            cap, l_num = compare_px(pre_px, px, select_color, l_num, i)
+            cap, l_num = compare_px(pre_px, px, select_color, l_num, i) # 比较
             if not is_spot(px):
                 pre_px = px
             if cap:  # 若色差够大
@@ -102,7 +109,6 @@ def jump(image):
         if flag:
             break
     if h_num == 0:  # 未找到，重新开始
-
         return DEFAULT_ERROR_DISTANCE
 
     h_avg_x = int(h_sum_x / h_num)
