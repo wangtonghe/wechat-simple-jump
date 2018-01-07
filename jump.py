@@ -3,9 +3,9 @@ import math
 
 DEFAULT_GAP = 10
 
-DEFAULT_DISTANCE = 100
+DEFAULT_ERROR_DISTANCE = 0
 
-DEFAULT_ERROR_TIME = 0  # 默认最小时间
+DEFAULT_DISTANCE = 100
 
 
 def compare_px(pre, cur, select_cl, like_num, x):
@@ -43,7 +43,7 @@ def is_spot(px):
     return flag
 
 
-def jump(image, time_param):
+def jump(image):
     width, height = image.size
     num = 0
     sum_x = 0
@@ -63,7 +63,7 @@ def jump(image, time_param):
                 sum_x = sum_x + i
                 sum_y = sum_y + j
     if num == 0:  # 出错，停止
-        return DEFAULT_ERROR_TIME
+        return DEFAULT_ERROR_DISTANCE
     avg_x = int(sum_x / num)
     avg_y = int(sum_y / num)
 
@@ -103,10 +103,12 @@ def jump(image, time_param):
             break
     if h_num == 0:  # 未找到，重新开始
 
-        return DEFAULT_ERROR_TIME
+        return DEFAULT_ERROR_DISTANCE
 
     h_avg_x = int(h_sum_x / h_num)
     h_avg_y = int(h_sum_y / h_num)
+
+    image.close()  # 关闭图片
 
     print('棋盘坐标为：{},{}'.format(h_avg_x, h_avg_y))
 
@@ -115,10 +117,4 @@ def jump(image, time_param):
 
     print('距离是{}'.format(distance))
 
-    jump_time = distance * time_param
-    return jump_time
-
-
-if __name__ == '__main__':
-    im = Image.open('error.png')
-    jump(im, 2.45)
+    return distance
